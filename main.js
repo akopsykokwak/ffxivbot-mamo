@@ -57,31 +57,5 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', msg => {
-  db.collection('servers').doc(msg.guild.id).get().then((q) => {
-    if (q.exists) {
-      prefix = q.data().prefix;
-    }
-  }).then(() => {
-    if (msg.channel.type === "dm") return;
-    if (msg.author.bot) return;
-
-    let msg_array = msg.content.split(" ");
-    let command = msg_array[0];
-    let args = msg_array.slice(1);
-
-    if (!command.startsWith(prefix)) return;
-
-    if (client.commands.get(command.slice(prefix.length))) {
-      let cmd = client.commands.get(command.slice(prefix.length));
-      if (cmd) {
-        cmd.run(client, msg, args, db);
-      }
-    } else { msg.channel.send(`🚫 Cette commande n'existe pas. Tu peux utiliser **!help** pour savoir quelle commande utiliser.`) }
-  })
-
-});
-
-
 //bot login
 client.login(token)

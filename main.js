@@ -30,7 +30,7 @@ const twitterClient = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
   access_token: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  access_token_secret: "https://mamo-test.firebaseio.com",
 });
 const destChannelTweets = '471963083158323200';
 
@@ -72,27 +72,32 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => {
-  db.collection('servers').doc(msg.guild.id).get().then((q) => {
-    if (q.exists) {
-      prefix = q.data().prefix;
-    }
-  }).then(() => {
-    if (msg.channel.type === "dm") return;
-    if (msg.author.bot) return;
-
-    let msg_array = msg.content.split(" ");
-    let command = msg_array[0];
-    let args = msg_array.slice(1);
-
-    if (!command.startsWith(prefix)) return;
-
-    if (client.commands.get(command.slice(prefix.length))) {
-      let cmd = client.commands.get(command.slice(prefix.length));
-      if (cmd) {
-        cmd.run(client, msg, args, db);
+  try{
+    db.collection('servers').doc(msg.guild.id).get().then((q) => {
+      if (q.exists) {
+        prefix = q.data().prefix;
       }
-    } else { msg.channel.send(`🚫 Cette commande n'existe pas. Tu peux utiliser **!help** pour savoir quelle commande utiliser.`) }
-  })
+    }).then(() => {
+      if (msg.channel.type === "dm") return;
+      if (msg.author.bot) return;
+  
+      let msg_array = msg.content.split(" ");
+      let command = msg_array[0];
+      let args = msg_array.slice(1);
+  
+      if (!command.startsWith(prefix)) return;
+  
+      if (client.commands.get(command.slice(prefix.length))) {
+        let cmd = client.commands.get(command.slice(prefix.length));
+        if (cmd) {
+          cmd.run(client, msg, args, db);
+        }
+      } else { msg.channel.send(`🚫 Cette commande n'existe pas. Tu peux utiliser **!help** pour savoir quelle commande utiliser.`) }
+    })
+  } catch(error) {
+    console.log(error);
+    msg.channel.send(`🚫 Erreur`)
+  }
 
 });
 

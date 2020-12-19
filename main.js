@@ -6,6 +6,20 @@ let prefix;
 const owner = process.env.OWNER;
 const token = process.env.TOKEN;
 
+const firebase = require('firebase/app');
+const FieldValue = require('firebase-admin').firestore.FieldValue;
+const admin = require('firebase-admin');
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    "project_id": process.env.FIREBASE_PROJECT_ID,
+    "private_key": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    "client_email": process.env.FIREBASE_CLIENT_EMAIL,
+  }), databaseURL: process.env.FIREBASE_URL
+});
+
+let db = admin.firestore();
+
 const { Client, Collection } = require('discord.js');
 const Twitter = require('twit');
 
@@ -55,6 +69,31 @@ fs.readdir('./commands', (err, files) => {
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('message', msg => {
+  db.collection('servers').doc(msg.guild.id).get().then((q) => {
+    if (q.exists) {
+      prefix = q.data().prefix;
+    }
+  }).then(() => {
+    if (msg.channel.type === "dm") return;
+    if (msg.author.bot) return;
+
+    let msg_array = msg.content.split(" ");
+    let command = msg_array[0];
+    let args = msg_array.slice(1);
+
+    if (!command.startsWith(prefix)) return;
+
+    if (client.commands.get(command.slice(prefix.length))) {
+      let cmd = client.commands.get(command.slice(prefix.length));
+      if (cmd) {
+        cmd.run(client, msg, args, db);
+      }
+    } else { msg.channel.send(`🚫 Cette commande n'existe pas. Tu peux utiliser **!help** pour savoir quelle commande utiliser.`) }
+  })
+
 });
 
 //bot login

@@ -2,7 +2,7 @@ const fs = require('fs');
 require('dotenv/config');
 
 //import settings;
-let prefix;
+let prefix = '!';
 const owner = process.env.OWNER;
 const token = process.env.TOKEN;
 
@@ -73,18 +73,12 @@ client.on('ready', () => {
 
 client.on('message', msg => {
   try{
-    db.collection('servers').doc(msg.guild.id).get().then((q) => {
-      if (q.exists) {
-        prefix = q.data().prefix;
-      }
-    }).then(() => {
       if (msg.channel.type === "dm") return;
       if (msg.author.bot) return;
   
       let msg_array = msg.content.split(" ");
       let command = msg_array[0];
       let args = msg_array.slice(1);
-  
       if (!command.startsWith(prefix)) return;
   
       if (client.commands.get(command.slice(prefix.length))) {
@@ -93,12 +87,10 @@ client.on('message', msg => {
           cmd.run(client, msg, args, db);
         }
       } else { msg.channel.send(`🚫 Cette commande n'existe pas. Tu peux utiliser **!help** pour savoir quelle commande utiliser.`) }
-    })
   } catch(error) {
     console.log(error);
     msg.channel.send(`🚫 Erreur`)
   }
-
 });
 
 //bot login

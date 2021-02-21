@@ -15,7 +15,7 @@ admin.initializeApp({
     "project_id": process.env.FIREBASE_PROJECT_ID,
     "private_key": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     "client_email": process.env.FIREBASE_CLIENT_EMAIL,
-  }), databaseURL: process.env.FIREBASE_URL
+  }), databaseURL: "https://mamo-test.firebaseio.com"
 });
 
 let db = admin.firestore();
@@ -30,7 +30,7 @@ const twitterClient = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
   access_token: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: "https://mamo-test.firebaseio.com",
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 const destChannelTweets = '471963083158323200';
 

@@ -14,8 +14,20 @@ function embedRandomQuote(randomQuote) {
   return embedQuote;
 }
 
+function embedUsersList(users) {
+let embedList = new MessageEmbed()
+  .setColor('#50aed4')
+  .addFields(
+    { name: `🚫 Je ne connais pas cette personne. Voici la liste des utilisateurs disponibles :`, value: users.map(user => {
+      return `- ${user}`
+    }) }
+  )
+  return embedList;
+}
+
 module.exports.run = async (client, message, args, db) => {
   let quotes = [];
+  let users = [];
   try {
     /**
      * retrieve all quotes from the collection in firestore and push them into an array
@@ -25,6 +37,9 @@ module.exports.run = async (client, message, args, db) => {
         quotes.push(doc.data())
       })
     });
+
+    quotes.forEach(quote => users.push(quote.discordName));
+    let uniqueUsers = [...new Set(users)];
 
     /**
      * send a random quote
@@ -56,17 +71,21 @@ module.exports.run = async (client, message, args, db) => {
      */
     else if (args.length === 1 && quotes.length !== 0) {
       const name = args[0];
-      const specificUserQuotes = quotes.filter(element => element.discordName === name);
+      if(users.includes(name)) {
+        const specificUserQuotes = quotes.filter(element => element.discordName === name);
+  
+        let randomQuote = randomizeQuote(specificUserQuotes);
+        let embedQuote = embedRandomQuote(randomQuote);
+        message.channel.send(embedQuote);
+      } else     message.channel.send(embedUsersList(uniqueUsers))
 
-      let randomQuote = randomizeQuote(specificUserQuotes);
-      let embedQuote = embedRandomQuote(randomQuote);
-      message.channel.send(embedQuote);
-
-    } else message.channel.send(`🚫 Il y a eu une erreur pendant le processus.`)
-
+    } else {
+      
+    }
+    
   } catch (error) {
     console.log(error);
-    if (error) message.channel.send(`🚫 Il y a eu une erreur pendant le processus.`)
+    message.channel.send('il y a eu une erreur')
   }
 }
 
